@@ -2,7 +2,7 @@ package main
 
 
 import (
-"fmt"
+	"fmt"
 	"time"
 	"os/exec"
 	"net/http"
@@ -15,23 +15,12 @@ import (
 type Account struct {
 	Username string
 	Password string
+	QueryString string
 }
 
 
 func main() {
 
-	//fmt.Println(getCurrentPath())
-	//fmt.Println("网络异常，尝试断线重连中……")
-	//data, _ := ioutil.ReadFile(getCurrentPath()+"account.json")
-	//account :=Account{}
-	//fmt.Println(string(data))
-	//errJson := json.Unmarshal(data,&account)
-	//if errJson!=nil{
-	//	fmt.Println("username and password marshal erro:",errJson)
-	//}
-	//
-	////url := "http://211.87.158.84/eportal/InterFace.do?method=login"
-	//fmt.Println(account.Username)
 
 	for
 	{
@@ -42,7 +31,7 @@ func main() {
 
 			continue
 		}else {
-			fmt.Println("网络异常，尝试断线重连中……")
+			fmt.Println("reconnecting....")
 			data, _ := ioutil.ReadFile(getCurrentPath()+"account.json")
 			account :=Account{}
 			errJson := json.Unmarshal(data,&account)
@@ -51,8 +40,8 @@ func main() {
 			}
 
 			url := "http://211.87.158.84/eportal/InterFace.do?method=login"
-			fmt.Println(account.Username)
-			payload := strings.NewReader("userId="+account.Username+"&password="+account.Password+"&service=internet&queryString=wlanuserip%253Dc99942ac921ffa9786e5452fed26fae9%2526wlanacname%253D5538726b55215fab4241428c6bbf825d%2526ssid%253D%2526nasip%253D5ab529d50e00cdf64d40f63e5fd64af4%2526snmpagentip%253D%2526mac%253D03c67de1a24e036dab09c3da4b79f4d5%2526t%253Dwireless-v2%2526url%253D709db9dc9ce334aa852572b5cb9ac0230818438c7e5bf423%2526apmac%253D%2526nasid%253D5538726b55215fab4241428c6bbf825d%2526vid%253Db403702dc8373411%2526port%253D1b83d6e46fd782a6%2526nasportid%253D5b9da5b08a53a5406447aa0a41d196f53fb18036c9f86b997d402f4cd6615939&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=false&undefined=")
+			fmt.Println(account.Username,"pass:",account.Password)
+			payload := strings.NewReader("userId="+account.Username+"&password="+account.Password+"&service=internet&queryString="+account.QueryString+"&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=false&undefined=")
 
 			req, _ := http.NewRequest("POST", url, payload)
 
@@ -86,32 +75,38 @@ func checkErr(err error) {
 }
 
 func NetWorkStatus() bool {
-	cmd := exec.Command("ping", "www.baidu.com" )
-	fmt.Println("正在检测网络状态", time.Now().Unix())
-	err := cmd.Run()
-	fmt.Println("检测网络状态完成 :", time.Now().Unix())
-	if err != nil {
 
-		fmt.Println(err)
+	fmt.Println("checking networking")
+	status := ExecCommand("ping www.baidu.com -c 5")
+	if(len(status)<10){
 		return false
-	} else {
-		fmt.Println("网络状态：良好")
+	}else {
+		fmt.Println("networking ok")
+		return true
 	}
-	return true
 
-//	cmd := exec.Command("ping", "www.baidu.com")
-//	var out bytes.Buffer
-//	var stderr bytes.Buffer
-//	cmd.Stdout = &out
-//	cmd.Stderr = &stderr
-//	err := cmd.Run()
-//	if err != nil {
-//		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-//		return false
-//	}
-//	fmt.Println("Result: " + out.String())
-//return true
 }
+func ExecCommand(strCommand string)(string){
+	cmd := exec.Command("/bin/bash", "-c", strCommand)
+
+
+	stdout, _ := cmd.StdoutPipe()
+	if err := cmd.Start(); err != nil{
+		fmt.Println("Execute failed when Start:" + err.Error())
+		return ""
+	}
+
+	out_bytes, _ := ioutil.ReadAll(stdout)
+	stdout.Close()
+
+	if err := cmd.Wait(); err != nil {
+		fmt.Println("Execute failed when Wait:" + err.Error())
+		return ""
+	}
+	return string(out_bytes)
+}
+
+
 
 
 
