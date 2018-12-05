@@ -15,6 +15,7 @@ import (
 type Account struct {
 	Username string
 	Password string
+	QueryString string
 }
 
 
@@ -51,8 +52,8 @@ func main() {
 			}
 
 			url := "http://211.87.158.84/eportal/InterFace.do?method=login"
-			fmt.Println(account.Username)
-			payload := strings.NewReader("userId="+account.Username+"&password="+account.Password+"&service=internet&queryString=wlanuserip%253Dc99942ac921ffa9786e5452fed26fae9%2526wlanacname%253D5538726b55215fab4241428c6bbf825d%2526ssid%253D%2526nasip%253D5ab529d50e00cdf64d40f63e5fd64af4%2526snmpagentip%253D%2526mac%253D03c67de1a24e036dab09c3da4b79f4d5%2526t%253Dwireless-v2%2526url%253D709db9dc9ce334aa852572b5cb9ac0230818438c7e5bf423%2526apmac%253D%2526nasid%253D5538726b55215fab4241428c6bbf825d%2526vid%253Db403702dc8373411%2526port%253D1b83d6e46fd782a6%2526nasportid%253D5b9da5b08a53a5406447aa0a41d196f53fb18036c9f86b997d402f4cd6615939&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=false&undefined=")
+			fmt.Println(account.Username,"pass:",account.Password)
+			payload := strings.NewReader("userId="+account.Username+"&password="+account.Password+"&service=internet&queryString="+account.QueryString+"&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=false&undefined=")
 
 			req, _ := http.NewRequest("POST", url, payload)
 
